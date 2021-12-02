@@ -2,7 +2,7 @@
 - Student Name: Yuhao Li
 - Student ID: 1054617
 - Due Date: Friday 13th of August 11:59:00 am (AEST).
-- Report Link: see canvas submission
+- Report Link: see ADS-1-report: managed to get 31/33
 
 # Dependencies
 - Language: _i.e Python 3.8.3 and/or R 4.05_
