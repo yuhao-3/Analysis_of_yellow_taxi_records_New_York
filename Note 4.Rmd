@@ -1,0 +1,94 @@
+---
+title: "Notebook 4: Modelling fitting and predicting"
+output: html_notebook
+---
+
+Model: Linear regression model: Predicting the amount of tips given predictors
+```{r}
+setwd(getwd())
+train_set = read.csv("../preprocessed_data/train_set.csv")
+test_set =read.csv("../preprocessed_data/test_set.csv")
+```
+
+Check distribution of response variable
+Even though a bit positively skewed, we still 
+assume it follows a normal distribution
+```{r}
+hist(train_set$tip_amount,xlab = "tip",ylab = "density",main = "Tip distribution")
+```
+Fitting interaction model and non-interaction model
+```{r}
+train_set$weekday = factor(train_set$weekday)
+train_set$weather = factor(train_set$weather)
+train_set$peak_time = factor(train_set$peak_time)
+
+# Model without interaction
+no_inter_model = lm(tip_amount ~ weekday+weather+peak_time+trip_distance,data = train_set)
+summary(no_inter_model)
+
+# Model with interaction
+inter_model = lm(tip_amount ~ (weekday+weather+peak_time+trip_distance)^2,data = train_set)
+summary(inter_model)
+```
+
+Test if interaction effect is 0, p-value is less than 0.05, we reject H0 that interaction
+effect is 0.
+```{r}
+anova(no_inter_model,inter_model)
+```
+
+Use step-wise selection to select the best model with BIC criterion
+ step wise selection delete no variable in both cases
+```{r}
+step_model = step(inter_model,k=log(length(train_set)))
+summary(step_model)
+
+step_no_model = step(no_inter_model,k = log(length(train_set)))
+summary(step_no_model)
+```
+
+Comparison between 2 models
+NO interaction model
+```{r}
+test_set$weekday = factor(test_set$weekday)
+test_set$weather = factor(test_set$weather)
+test_set$peak_time = factor(test_set$peak_time)
+prediction = predict(no_inter_model,data.frame(test_set[c("weekday","weather","peak_time","trip_distance")]))
+```
+
+
+Evaluation metric of of non-interaction model
+```{r}
+# r2
+summary(no_inter_model)$r.squared
+
+## Mean squared error
+mean((prediction-test_set$tip_amount)^2)
+
+##  Mean absolute  error
+mean(abs(prediction-test_set$tip_amount))
+
+```
+
+
+Evaluation metric of of interaction model
+```{r}
+prediction = predict(inter_model,data.frame(test_set[c("weekday","weather","peak_time","trip_distance")]))
+
+# r2
+summary(inter_model)$r.squared
+
+## Mean squared error
+mean((prediction-test_set$tip_amount)^2)
+
+##  Mean absolute  error
+mean(abs(prediction-test_set$tip_amount))
+
+```
+
+
+Diagnostic plot for the final model
+```{r}
+plot(inter_model)
+```
+
